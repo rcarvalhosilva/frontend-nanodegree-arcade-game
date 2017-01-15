@@ -3,8 +3,36 @@ var spritesBaseY = - 41.5;
 var validBlockHeight = 83;
 var spriteWidth = 101;
 
-// Enemies our player must avoid
+// --------- Sprite Class ------------
+// this class is used to implement the hitbox and collision system
+var Sprite = function () {
+    this.height = 50;
+    this.width = 80;
+    this.y = 0;
+    this.x = 0;
+};
+Sprite.prototype.top = function () {
+    return this.y + 50;
+}
+Sprite.prototype.bottom = function () {
+    return this.y + this.height;
+}
+Sprite.prototype.left = function () {
+    return this.x + 10;
+}
+Sprite.prototype.right = function () {
+    return this.x + this.width;
+}
+Sprite.prototype.intersect = function(sprite) {
+    return !(sprite.left() > this.right() ||
+            sprite.right() < this.left() ||
+            sprite.top() > this.bottom() ||
+            sprite.bottom() < this.top());
+}
+
+// --------- Enemy Class ------------
 var Enemy = function(lane) {
+    Sprite.call(this);
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
@@ -12,13 +40,14 @@ var Enemy = function(lane) {
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
 
-    // puts the enemy outside the screen
-    this.x = - spriteWidth;
+    this.x = - spriteWidth; // puts the enemy outside the screen
     this.y = spritesBaseY + validBlockHeight * lane;
 
     var speed = Math.floor(Math.random() * 300) + 80;
     this.speed = speed;
 };
+Enemy.prototype = Object.create(Sprite.prototype);
+Enemy.prototype.constructor = Enemy;
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -27,6 +56,11 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     this.x = this.x + this.speed * dt;
+    if (this.intersect(player)) {
+        console.log("colisão");
+        player.reset();
+    }
+
 };
 
 // Draw the enemy on the screen, required method for game
@@ -34,21 +68,22 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// --------- Player Class ------------
 var Player = function () {
+    Sprite.call(this);
     this.sprite = "images/char-boy.png";
     // places the original x position on the middle of the center
     // colunm (in this case we have 5)
     this.originalX = 2 * spriteWidth;
     // set the original Y position in the middle of the top light area in the
     // ground sprite of the last row (6 total).
-    this.originalY = spritesBaseY + 5 * 83;
+    this.originalY = spritesBaseY + 5 * validBlockHeight;
     this.x = this.originalX;
     this.y = this.originalY;
 };
 
+Player.prototype = Object.create(Sprite.prototype);
+Player.prototype.constructor = Player;
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
@@ -61,8 +96,8 @@ Player.prototype.handleInput = function(key) {
         // as the spritesBaseY reference value is negative
         // while the Y position of the player is positive
         // it means that he's not in the water yet
-        if (this.y - 83 >= 0) {
-            this.y -= 83;
+        if (this.y - validBlockHeight >= 0) {
+            this.y -= validBlockHeight;
         } else {
             // otherwise he won and we need to reset the players
             // position to the original one
@@ -81,17 +116,21 @@ Player.prototype.handleInput = function(key) {
         }
     } if (key == "down") {
         // the originalY position is in the bottom of the valid move region
-        if (this.y + 83 <= this.originalY) {
-            this.y += 83;
+        if (this.y + validBlockHeight <= this.originalY) {
+            this.y += validBlockHeight;
         }
     }
 };
+
 Player.prototype.update = function() {}
+
+// ----- Global Variables ----
 
 // Place all enemy objects in an array called allEnemies
 var allEnemies = [];
 var player = new Player();
 
+// --------- Enemy Generator Class ------------
 var EnemyGenerator = function () {
     this.enemyCount = 7;
     // every sec it deploys a new enemy
@@ -104,6 +143,7 @@ EnemyGenerator.prototype.deployEnemy = function() {
     allEnemies.push(enemy);
 };
 
+// initiates enemy generator
 var generator = new EnemyGenerator();
 
 // This listens for key presses and sends the keys to your
