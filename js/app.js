@@ -1,3 +1,8 @@
+// it sets the Y relative positioning of the sprites.
+var spritesBaseY = - 41.5;
+var validBlockHeight = 83;
+var spriteWidth = 101;
+
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -7,7 +12,7 @@ var Enemy = function() {
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
     this.x = 0;
-    this.y = 0
+    this.y = 0;
     this.speed = 3;
 };
 
@@ -30,17 +35,54 @@ Enemy.prototype.render = function() {
 // a handleInput() method.
 var Player = function () {
     this.sprite = "images/char-boy.png";
-    this.x = 0;
-    this.y = 0;
+    // places the original x position on the middle of the center
+    // colunm (in this case we have 5)
+    this.originalX = 2 * spriteWidth;
+    // set the original Y position in the middle of the top light area in the
+    // ground sprite of the last row (6 total).
+    this.originalY = spritesBaseY + 5 * 83;
+    this.x = this.originalX;
+    this.y = this.originalY;
 };
 
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
-Player.prototype.handleInput = function(key) {
-    console.log(key);
+Player.prototype.reset = function() {
+    this.x = this.originalX;
+    this.y = this.originalY;
 };
-Player.prototype.update = function(dt) {
+Player.prototype.handleInput = function(key) {
+    if (key == "up") {
+        // as the spritesBaseY reference value is negative
+        // while the Y position of the player is positive
+        // it means that he's not in the water yet
+        if (this.y - 83 >= 0) {
+            this.y -= 83;
+        } else {
+            // otherwise he won and we need to reset the players
+            // position to the original one
+            this.reset();
+        }
+    } if (key == "left") {
+        // if my next step to the left left me in a position still inside
+        // the canvas keep going, otherwise stay still.
+        if (this.x - spriteWidth >= 0) {
+            this.x -= spriteWidth;
+        }
+    } if (key == "right") {
+        // same logic as for the left. The x is the left of the sprite.
+        if (this.x < ctx.canvas.width - spriteWidth) {
+            this.x += spriteWidth;
+        }
+    } if (key == "down") {
+        // the originalY position is in the bottom of the valid move region
+        if (this.y + 83 <= this.originalY) {
+            this.y += 83;
+        }
+    }
+};
+Player.prototype.update = function() {
 
 }
 
