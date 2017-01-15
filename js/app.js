@@ -101,7 +101,11 @@ Player.prototype.handleInput = function(key) {
         } else {
             // otherwise he won and we need to reset the players
             // position to the original one
+            shouldRenderText = true;
             this.reset();
+            setTimeout(function () {
+                shouldRenderText = false;
+            }, 1000);
         }
     } if (key == "left") {
         // if my next step to the left left me in a position still inside

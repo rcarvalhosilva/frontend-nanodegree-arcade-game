@@ -27,6 +27,7 @@ var Engine = (function(global) {
 
     canvas.width = 505;
     canvas.height = 606;
+    global.shouldRenderText = false;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -137,6 +138,25 @@ var Engine = (function(global) {
         }
 
         renderEntities();
+        renderText();
+    }
+
+    /* This function is responsable for rendering the end game text on the screen.
+    It is called on each game tick.
+     */
+    function renderText() {
+        var text = "You Won! \\o/";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "yellow";
+        ctx.font = "36pt arial";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.textBaseline = "middle";
+
+        if (global.shouldRenderText) {
+            ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 2);
+            ctx.strokeText(text, ctx.canvas.width / 2, ctx.canvas.height / 2);
+        }
     }
 
     /* This function is called by the render function and is called on each game
