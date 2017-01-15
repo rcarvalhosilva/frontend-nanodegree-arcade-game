@@ -4,16 +4,20 @@ var validBlockHeight = 83;
 var spriteWidth = 101;
 
 // Enemies our player must avoid
-var Enemy = function() {
+var Enemy = function(lane) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
-    this.x = 0;
-    this.y = 0;
-    this.speed = 3;
+
+    // puts the enemy outside the screen
+    this.x = - spriteWidth;
+    this.y = spritesBaseY + validBlockHeight * lane;
+
+    var speed = Math.floor(Math.random() * 300) + 80;
+    this.speed = speed;
 };
 
 // Update the enemy's position, required method for game
@@ -82,18 +86,25 @@ Player.prototype.handleInput = function(key) {
         }
     }
 };
-Player.prototype.update = function() {
+Player.prototype.update = function() {}
 
-}
-
-// Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-var enemy = new Enemy();
 var allEnemies = [];
-allEnemies.push(enemy);
 var player = new Player();
 
+var EnemyGenerator = function () {
+    this.enemyCount = 7;
+    // every sec it deploys a new enemy
+    var timer = setInterval(this.deployEnemy, 1000);
+};
+EnemyGenerator.prototype.deployEnemy = function() {
+    // selects in wich lane the enemy will be placed randomly
+    var lane = Math.floor(Math.random() * 3) + 1;
+    var enemy = new Enemy(lane);
+    allEnemies.push(enemy);
+};
+
+var generator = new EnemyGenerator();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
